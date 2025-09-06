@@ -53,7 +53,7 @@ It finds variables defined in `$[]` symbols to substitute
 colorctl vars +color=blue
 
 # Add an app (template, target)
-colorctl apps +nvim=~/.config/nvim/init.vim,~/.cache/nvim/init.vim
+colorctl apps +nvim=~/Templates/colorctl/init.vim,~/.config/nvim/init.vim
 
 # Apply all configs
 colorctl apply
