@@ -34,7 +34,7 @@ jobs:
 
       - name: Package binary
         run: |
-          BIN_NAME=<your-binary-name>
+          BIN_NAME=colorctl
           TARGET=${{ matrix.target }}
           PRETTY=${{ matrix.pretty }}
           OUT_DIR=dist
