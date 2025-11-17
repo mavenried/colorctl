@@ -1,4 +1,3 @@
-use colored::Colorize;
 use directories::ProjectDirs;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -16,16 +15,9 @@ pub struct AppEntry {
 pub type Vars = HashMap<String, String>;
 pub type Apps = HashMap<String, AppEntry>;
 
-pub fn info(msg: impl AsRef<str>) {
-    println!("colorctl({}): {}", "info".yellow(), msg.as_ref().yellow());
-}
-pub fn error(msg: impl AsRef<str>) {
-    eprintln!("colorctl({}): {}", "error".red(), msg.as_ref().red());
-}
-
 pub fn cfg_dir() -> io::Result<PathBuf> {
     let dirs = ProjectDirs::from("", "", "colorctl")
-        .ok_or_else(|| io::Error::other("cannot resolve config dir"))?;
+        .ok_or_else(|| io::Error::other("Cannot resolve config dir."))?;
     let path = dirs.config_dir().to_path_buf();
     fs::create_dir_all(&path)?;
     Ok(path)
@@ -68,13 +60,13 @@ pub fn load_state() -> io::Result<(Vars, Apps, PathBuf, PathBuf)> {
 
 pub fn save_vars(vars_p: &Path, vars: &Vars) {
     if let Err(e) = write_json(vars_p, vars) {
-        error(format!("failed saving variables: {e}"));
+        tracing::error!("Failed saving variables: {e}");
     }
 }
 
 pub fn save_apps(apps_p: &Path, apps: &Apps) {
     if let Err(e) = write_json(apps_p, apps) {
-        error(format!("failed saving applications: {e}"));
+        tracing::error!("Failed saving applications: {e}");
     }
 }
 
@@ -87,10 +79,7 @@ pub fn apply(vars: &Vars, apps: &Apps) {
         let template = match fs::read_to_string(&template_path) {
             Ok(s) => s,
             Err(_) => {
-                error(format!(
-                    "no such template `{}` for app {name}",
-                    app.template
-                ));
+                tracing::error!("No such template `{}` for app `{name}`.", app.template);
                 continue;
             }
         };
@@ -100,7 +89,7 @@ pub fn apply(vars: &Vars, apps: &Apps) {
             .replace_all(&template, |caps: &regex::Captures| {
                 let key = &caps[1];
                 if let Some(val) = vars.get(key) {
-                    info(format!("found var `{key}` in {name} conf"));
+                    tracing::info!("Found var `{key}` in {name} conf.");
                     val.to_string()
                 } else {
                     unknowns.push(key.to_string());
@@ -110,11 +99,11 @@ pub fn apply(vars: &Vars, apps: &Apps) {
             .to_string();
 
         for u in unknowns {
-            error(format!("found unknown var `{u}` in {name} conf"));
+            tracing::error!("Found unknown var `{u}` in {name} conf.");
         }
 
         if let Err(e) = fs::write(&target_path, out) {
-            error(format!("write failed for `{}`: {e}", target_path));
+            tracing::error!("Write failed for `{target_path}`: {e}");
         }
     }
 }

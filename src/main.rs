@@ -12,13 +12,14 @@ mod utility;
 use utility::*;
 
 fn main() {
+    tracing_subscriber::fmt::init();
     let cli = Cli::parse();
 
     // Load state
     let (mut vars, mut apps, vars_p, apps_p) = match load_state() {
         Ok(x) => x,
         Err(e) => {
-            error(format!("failed to load state: {e}"));
+            tracing::error!("Failed to load state: {e}");
             return;
         }
     };
@@ -59,16 +60,16 @@ fn main() {
                                 let status = Command::new(&editor).arg(&path).status();
                                 match status {
                                     Ok(_) => {
-                                        info(format!("opened {} in {}", entry.template, editor))
+                                        tracing::info!("Opened {} in {}.", entry.template, editor)
                                     }
-                                    Err(e) => error(format!("failed to run editor: {e}")),
+                                    Err(e) => tracing::error!("Failed to run editor: {e}"),
                                 }
                             } else {
-                                info("nothing picked!");
+                                tracing::info!("Nothing picked!");
                             }
                         }
-                        Ok(None) => info("nothing picked!"),
-                        Err(e) => error(format!("fzf failed: {e}")),
+                        Ok(None) => tracing::info!("Nothing picked!"),
+                        Err(e) => tracing::error!("Command `fzf` failed: {e}"),
                     }
                 } else {
                     for app in to_edit {
@@ -76,11 +77,11 @@ fn main() {
                             let path = expand(&entry.template);
                             let status = Command::new(&editor).arg(&path).status();
                             match status {
-                                Ok(_) => info(format!("opened {} in {}", entry.template, editor)),
-                                Err(e) => error(format!("failed to run editor: {e}")),
+                                Ok(_) => tracing::info!("Opened {} in {}.", entry.template, editor),
+                                Err(e) => tracing::error!("Failed to run editor: {e}"),
                             }
                         } else {
-                            error("app does not exist.");
+                            tracing::error!("App does not exist.");
                         }
                     }
                 }
